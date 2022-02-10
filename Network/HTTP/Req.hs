@@ -155,6 +155,7 @@ module Network.HTTP.Req
     -- $query-parameters
     (=:),
     queryFlag,
+    formToQuery,
     QueryParam (..),
 
     -- *** Headers
@@ -272,6 +273,7 @@ import Text.URI (URI)
 import qualified Text.URI as URI
 import qualified Text.URI.QQ as QQ
 import qualified Web.Authenticate.OAuth as OAuth
+import Web.FormUrlEncoded (ToForm, Form, FromForm(..))
 import Web.HttpApiData (ToHttpApiData (..))
 
 ----------------------------------------------------------------------------
@@ -1304,6 +1306,10 @@ instance QueryParam FormUrlEncodedParam where
   queryParam name mvalue =
     FormUrlEncodedParam [(name, toQueryParam <$> mvalue)]
 
+-- | Use 'formToQuery'.
+instance FromForm FormUrlEncodedParam where
+  fromForm = Right . formToQuery
+
 -- | Multipart form data. Please consult the
 -- "Network.HTTP.Client.MultipartFormData" module for how to construct
 -- parts, then use 'reqBodyMultipart' to create actual request body from the
@@ -1428,6 +1434,10 @@ instance Monoid (Option scheme) where
   mempty = Option mempty Nothing
   mappend = (<>)
 
+-- | Use 'formToQuery'.
+instance FromForm (Option scheme) where
+  fromForm = Right . formToQuery
+
 -- | A helper to create an 'Option' that modifies only collection of query
 -- parameters. This helper is not a part of the public API.
 withQueryParams :: (Y.QueryText -> Y.QueryText) -> Option scheme
@@ -1481,6 +1491,12 @@ name =: value = queryParam name (pure value)
 -- > queryFlag name = queryParam name (Nothing :: Maybe ())
 queryFlag :: QueryParam param => Text -> param
 queryFlag name = queryParam name (Nothing :: Maybe ())
+
+-- | Construct query parameters from a 'Form' obtained by the 'ToForm'
+-- instance. This is useful to encode your own data type into a
+-- 'QueryParam' instance.
+formToQuery :: (QueryParam param, ToForm f) => f -> param
+formToQuery = undefined -- TODO.
 
 -- | A type class for query-parameter-like things. The reason to have an
 -- overloaded 'queryParam' is to be able to use it as an 'Option' and as a
