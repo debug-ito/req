@@ -232,9 +232,9 @@ spec = do
           case L.requestBody request of
             L.RequestBodyLBS x -> x `shouldBe` renderQuery params
             _ -> expectationFailure "Wrong request body constructor."
-    describe "FormUrlEncodedParams" $
-      specify "ToForm" $ undefined -- TODO
-      specify "FromForm" $ undefined -- TODO
+    describe "FormUrlEncodedParams" $ do
+      specify "ToForm" $ True `shouldBe` False -- TODO
+      specify "FromForm" $ True `shouldBe` False -- TODO
       
 
   describe "optional parameters" $ do
