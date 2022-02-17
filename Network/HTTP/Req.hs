@@ -141,6 +141,7 @@ module Network.HTTP.Req
     ReqBodyLbs (..),
     ReqBodyUrlEnc (..),
     FormUrlEncodedParam,
+    lookupFormParam,
     ReqBodyMultipart,
     reqBodyMultipart,
     HttpBody (..),
@@ -257,6 +258,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Typeable (Typeable, cast)
+import GHC.Exts (IsList(..))
 import GHC.Generics
 import GHC.TypeLits
 import qualified Language.Haskell.TH as TH
@@ -273,7 +275,7 @@ import Text.URI (URI)
 import qualified Text.URI as URI
 import qualified Text.URI.QQ as QQ
 import qualified Web.Authenticate.OAuth as OAuth
-import Web.FormUrlEncoded (ToForm, Form, FromForm(..))
+import Web.FormUrlEncoded (ToForm, FromForm(..))
 import Web.HttpApiData (ToHttpApiData (..))
 
 ----------------------------------------------------------------------------
@@ -1299,6 +1301,8 @@ instance HttpBody ReqBodyUrlEnc where
 
 -- | An opaque monoidal value that allows to collect URL-encoded parameters
 -- to be wrapped in 'ReqBodyUrlEnc'.
+--
+-- You can inspect its content with 'lookupFormParam' and 'toList'.
 newtype FormUrlEncodedParam = FormUrlEncodedParam [(Text, Maybe Text)]
   deriving (Semigroup, Monoid)
 
@@ -1309,6 +1313,16 @@ instance QueryParam FormUrlEncodedParam where
 -- | Use 'formToQuery'.
 instance FromForm FormUrlEncodedParam where
   fromForm = Right . formToQuery
+
+instance IsList FormUrlEncodedParam where
+  type Item FormUrlEncodedParam = (Text, Maybe Text)
+  fromList = FormUrlEncodedParam
+  toList (FormUrlEncodedParam l) = l
+
+-- | Lookup values associated with the given key from the
+-- 'FormUrlEncodedParam'.
+lookupFormParam :: Text -> FormUrlEncodedParam -> [Maybe Text]
+lookupFormParam = undefined -- TODO
 
 -- | Multipart form data. Please consult the
 -- "Network.HTTP.Client.MultipartFormData" module for how to construct
