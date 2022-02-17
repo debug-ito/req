@@ -1322,7 +1322,7 @@ instance IsList FormUrlEncodedParam where
 -- | Lookup values associated with the given key from the
 -- 'FormUrlEncodedParam'.
 lookupFormParam :: Text -> FormUrlEncodedParam -> [Maybe Text]
-lookupFormParam = undefined -- TODO
+lookupFormParam key (FormUrlEncodedParam params) = map snd $ filter (\(k, _) -> k == key) params
 
 -- | Multipart form data. Please consult the
 -- "Network.HTTP.Client.MultipartFormData" module for how to construct
