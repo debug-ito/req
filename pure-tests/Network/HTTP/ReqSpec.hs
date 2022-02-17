@@ -239,20 +239,6 @@ spec = do
           property $ \params -> do
             let f = fromList params :: FormUrlEncodedParam
             toList f `shouldBe` params
-      describe "lookupFormParam" $ do
-        let f = formUrlEnc [ ("foo", Just "bar"),
-                             ("multi", Just "mmm"),
-                             ("multi", Nothing),
-                             ("hoge", Just "huga"),
-                             ("zero", Nothing),
-                             ("multi", Just "nnn")
-                           ]
-        it "should return empty if the key doesn't exist" $ do
-          lookupFormParam "quux" f `shouldBe` []
-        it "should return the value if the key exists" $ do
-          lookupFormParam "hoge" f `shouldBe` [Just "huga"]
-        it "should return all values for the key, preserving the order" $ do
-          lookupFormParam "multi" f `shouldBe` [Just "mmm", Nothing, Just "nnn"]
 
   describe "optional parameters" $ do
     describe "header" $ do

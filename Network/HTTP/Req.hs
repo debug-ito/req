@@ -141,7 +141,6 @@ module Network.HTTP.Req
     ReqBodyLbs (..),
     ReqBodyUrlEnc (..),
     FormUrlEncodedParam,
-    lookupFormParam,
     ReqBodyMultipart,
     reqBodyMultipart,
     HttpBody (..),
@@ -1302,7 +1301,7 @@ instance HttpBody ReqBodyUrlEnc where
 -- | An opaque monoidal value that allows to collect URL-encoded parameters
 -- to be wrapped in 'ReqBodyUrlEnc'.
 --
--- You can inspect its content with 'lookupFormParam' and 'toList'.
+-- You can inspect its content with 'toList'.
 newtype FormUrlEncodedParam = FormUrlEncodedParam [(Text, Maybe Text)]
   deriving (Semigroup, Monoid)
 
@@ -1318,11 +1317,6 @@ instance IsList FormUrlEncodedParam where
   type Item FormUrlEncodedParam = (Text, Maybe Text)
   fromList = FormUrlEncodedParam
   toList (FormUrlEncodedParam l) = l
-
--- | Lookup values associated with the given key from the
--- 'FormUrlEncodedParam'.
-lookupFormParam :: Text -> FormUrlEncodedParam -> [Maybe Text]
-lookupFormParam key (FormUrlEncodedParam params) = map snd $ filter (\(k, _) -> k == key) params
 
 -- | Multipart form data. Please consult the
 -- "Network.HTTP.Client.MultipartFormData" module for how to construct
