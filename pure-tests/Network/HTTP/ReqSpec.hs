@@ -47,6 +47,7 @@ import Test.QuickCheck
 import Text.URI (URI)
 import qualified Text.URI as URI
 import qualified Text.URI.QQ as QQ
+import Web.FormUrlEncoded (urlDecodeForm)
 
 spec :: Spec
 spec = do
@@ -239,6 +240,15 @@ spec = do
           property $ \params -> do
             let f = fromList params :: FormUrlEncodedParam
             toList f `shouldBe` params
+
+  describe "query params" $ do
+    describe "formToQuery" $ do
+      specFormToQuery "a=b" [("a", Just "b")]
+      specFormToQuery' (Just "(empty)") "" []
+      specFormToQuery "a=1&b=2&c=3" [("a", Just "1"), ("b", Just "2"), ("c", Just "3")]
+      specFormToQuery "a=1&a=2&a=3" [("a", Just "1"), ("a", Just "2"), ("a", Just "3")]
+      specFormToQuery "a" [("a", Nothing)]
+      specFormToQuery "a&b" [("a", Nothing), ("b", Nothing)]
 
   describe "optional parameters" $ do
     describe "header" $ do
@@ -605,3 +615,18 @@ basicProxyAuthHeader :: ByteString -> ByteString -> ByteString
 basicProxyAuthHeader username password =
   fromJust . lookup Y.hProxyAuthorization . L.requestHeaders $
     L.applyBasicProxyAuth username password L.defaultRequest
+
+specFormToQuery :: ByteString -> [(Text, Maybe Text)] -> Spec
+specFormToQuery = specFormToQuery' Nothing
+
+specFormToQuery' :: Maybe String -> ByteString -> [(Text, Maybe Text)] -> Spec
+specFormToQuery' mSpecName inputParams expected = specify specName $ do
+  let got :: Either Text FormUrlEncodedParam
+      got = fmap formToQuery $ urlDecodeForm $ BL.fromStrict inputParams
+  gotParams <-
+    case got of
+      Right p -> return p
+      Left e -> throwIO $ userError ("Unexpected parse error: " <> T.unpack e)
+  toList gotParams `shouldMatchList` expected
+  where
+    specName = maybe (B8.unpack inputParams) id mSpecName
