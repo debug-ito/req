@@ -274,7 +274,7 @@ import Text.URI (URI)
 import qualified Text.URI as URI
 import qualified Text.URI.QQ as QQ
 import qualified Web.Authenticate.OAuth as OAuth
-import Web.FormUrlEncoded (ToForm(..), FromForm(..), Form(unForm))
+import Web.FormUrlEncoded (ToForm(..), FromForm(..), toListStable)
 import Web.HttpApiData (ToHttpApiData (..))
 
 ----------------------------------------------------------------------------
@@ -1504,12 +1504,12 @@ queryFlag name = queryParam name (Nothing :: Maybe ())
 -- instance. This is useful to encode your own data type into a
 -- 'QueryParam' instance.
 formToQuery :: (QueryParam param, Monoid param, ToForm f) => f -> param
-formToQuery f = mconcat $ map (uncurry queryParam) $ toParamPairs =<< (toList $ unForm $ toForm f)
+formToQuery f = mconcat $ map (uncurry queryParam . toParamPair) $ toListStable $ toForm f
   where
-    toParamPairs (key, vals) =
-      case vals of
-        [] -> [(key, Nothing)]
-        _  -> map (\v -> (key, Just v)) vals
+    toParamPair (key, val) =
+      if val == ""
+      then (key, Nothing)
+      else (key, Just val)
 
 -- | A type class for query-parameter-like things. The reason to have an
 -- overloaded 'queryParam' is to be able to use it as an 'Option' and as a
