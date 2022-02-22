@@ -1500,9 +1500,14 @@ name =: value = queryParam name (pure value)
 queryFlag :: QueryParam param => Text -> param
 queryFlag name = queryParam name (Nothing :: Maybe ())
 
--- | Construct query parameters from a 'Form' obtained by the 'ToForm'
--- instance. This is useful to encode your own data type into a
--- 'QueryParam' instance.
+-- | Construct query parameters from a 'ToForm' instance. This
+-- function produces the same query params as
+-- 'Web.FormUrlEncoded.urlEncodeAsFormStable' produces.
+--
+-- Note that 'Form' doesn't have concept of parameters of empty value
+-- (i.e. what you can get by @key := ""@). If the value is empty, it
+-- will be encoded as a valueless parameter
+-- (i.e. what you can get by @queryFlag key@).
 formToQuery :: (QueryParam param, Monoid param, ToForm f) => f -> param
 formToQuery f = mconcat $ map (uncurry queryParam . toParamPair) $ toListStable $ toForm f
   where
