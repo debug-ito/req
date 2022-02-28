@@ -1506,7 +1506,7 @@ queryFlag name = queryParam name (Nothing :: Maybe ())
 -- 'Form.urlEncodeAsFormStable' produces.
 --
 -- Note that 'Form.Form' doesn't have concept of parameters of empty value
--- (i.e. what you can get by @key := ""@). If the value is empty, it
+-- (i.e. what you can get by @key =: ""@). If the value is empty, it
 -- will be encoded as a valueless parameter
 -- (i.e. what you can get by @queryFlag key@).
 formToQuery :: (QueryParam param, Monoid param, ToForm f) => f -> param
