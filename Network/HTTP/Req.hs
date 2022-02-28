@@ -155,6 +155,7 @@ module Network.HTTP.Req
     -- $query-parameters
     (=:),
     queryFlag,
+    formToQuery,
     QueryParam (..),
 
     -- *** Headers
@@ -256,6 +257,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Typeable (Typeable, cast)
+import GHC.Exts (IsList(..))
 import GHC.Generics
 import GHC.TypeLits
 import qualified Language.Haskell.TH as TH
@@ -272,6 +274,8 @@ import Text.URI (URI)
 import qualified Text.URI as URI
 import qualified Text.URI.QQ as QQ
 import qualified Web.Authenticate.OAuth as OAuth
+import Web.FormUrlEncoded (ToForm(..), FromForm(..))
+import qualified Web.FormUrlEncoded as Form
 import Web.HttpApiData (ToHttpApiData (..))
 
 ----------------------------------------------------------------------------
@@ -1297,12 +1301,23 @@ instance HttpBody ReqBodyUrlEnc where
 
 -- | An opaque monoidal value that allows to collect URL-encoded parameters
 -- to be wrapped in 'ReqBodyUrlEnc'.
+--
+-- You can inspect its content with 'toList'.
 newtype FormUrlEncodedParam = FormUrlEncodedParam [(Text, Maybe Text)]
   deriving (Semigroup, Monoid)
 
 instance QueryParam FormUrlEncodedParam where
   queryParam name mvalue =
     FormUrlEncodedParam [(name, toQueryParam <$> mvalue)]
+
+-- | Use 'formToQuery'.
+instance FromForm FormUrlEncodedParam where
+  fromForm = Right . formToQuery
+
+instance IsList FormUrlEncodedParam where
+  type Item FormUrlEncodedParam = (Text, Maybe Text)
+  fromList = FormUrlEncodedParam
+  toList (FormUrlEncodedParam l) = l
 
 -- | Multipart form data. Please consult the
 -- "Network.HTTP.Client.MultipartFormData" module for how to construct
@@ -1428,6 +1443,10 @@ instance Monoid (Option scheme) where
   mempty = Option mempty Nothing
   mappend = (<>)
 
+-- | Use 'formToQuery'.
+instance FromForm (Option scheme) where
+  fromForm = Right . formToQuery
+
 -- | A helper to create an 'Option' that modifies only collection of query
 -- parameters. This helper is not a part of the public API.
 withQueryParams :: (Y.QueryText -> Y.QueryText) -> Option scheme
@@ -1481,6 +1500,22 @@ name =: value = queryParam name (pure value)
 -- > queryFlag name = queryParam name (Nothing :: Maybe ())
 queryFlag :: QueryParam param => Text -> param
 queryFlag name = queryParam name (Nothing :: Maybe ())
+
+-- | Construct query parameters from a 'ToForm' instance. This
+-- function produces the same query params as
+-- 'Form.urlEncodeAsFormStable' produces.
+--
+-- Note that 'Form.Form' doesn't have concept of parameters of empty value
+-- (i.e. what you can get by @key =: ""@). If the value is empty, it
+-- will be encoded as a valueless parameter
+-- (i.e. what you can get by @queryFlag key@).
+formToQuery :: (QueryParam param, Monoid param, ToForm f) => f -> param
+formToQuery f = mconcat $ map (uncurry queryParam . toParamPair) $ Form.toListStable $ toForm f
+  where
+    toParamPair (key, val) =
+      if val == ""
+      then (key, Nothing)
+      else (key, Just val)
 
 -- | A type class for query-parameter-like things. The reason to have an
 -- overloaded 'queryParam' is to be able to use it as an 'Option' and as a

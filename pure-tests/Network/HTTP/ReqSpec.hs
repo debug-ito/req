@@ -33,6 +33,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Time
 import Data.Typeable (Typeable, eqT)
+import GHC.Exts (IsList(..))
 import GHC.Generics
 import qualified Language.Haskell.TH as TH
 import qualified Language.Haskell.TH.Quote as TH
@@ -46,6 +47,7 @@ import Test.QuickCheck
 import Text.URI (URI)
 import qualified Text.URI as URI
 import qualified Text.URI.QQ as QQ
+import qualified Web.FormUrlEncoded as F
 
 spec :: Spec
 spec = do
@@ -232,6 +234,21 @@ spec = do
           case L.requestBody request of
             L.RequestBodyLBS x -> x `shouldBe` renderQuery params
             _ -> expectationFailure "Wrong request body constructor."
+
+  describe "query params" $ do
+    describe "FormUrlEncodedParam" $ do
+      describe "ToList and FromList" $ do
+        it "should be isomorphic" $
+          property $ \params -> do
+            let f = fromList params :: FormUrlEncodedParam
+            toList f `shouldBe` params
+    describe "formToQuery" $ do
+      it "should produce the same parameters as F.urlEncodeFormStable" $
+        property $ \form -> do
+          request <- req_ POST url (ReqBodyUrlEnc $ formToQuery form) mempty
+          case L.requestBody request of
+            L.RequestBodyLBS x -> x `shouldBe` F.urlEncodeFormStable form
+            _ -> expectationFailure "Wrong request body constructor"
 
   describe "optional parameters" $ do
     describe "header" $ do
@@ -485,6 +502,9 @@ instance Arbitrary Day where
 
 instance Arbitrary DiffTime where
   arbitrary = secondsToDiffTime <$> arbitrary
+
+instance Arbitrary F.Form where
+  arbitrary = (F.Form . fromList) <$> arbitrary
 
 ----------------------------------------------------------------------------
 -- Helper types
