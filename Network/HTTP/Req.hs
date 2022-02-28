@@ -274,7 +274,8 @@ import Text.URI (URI)
 import qualified Text.URI as URI
 import qualified Text.URI.QQ as QQ
 import qualified Web.Authenticate.OAuth as OAuth
-import Web.FormUrlEncoded (ToForm(..), FromForm(..), toListStable)
+import Web.FormUrlEncoded (ToForm(..), FromForm(..))
+import qualified Web.FormUrlEncoded as Form
 import Web.HttpApiData (ToHttpApiData (..))
 
 ----------------------------------------------------------------------------
@@ -1502,14 +1503,14 @@ queryFlag name = queryParam name (Nothing :: Maybe ())
 
 -- | Construct query parameters from a 'ToForm' instance. This
 -- function produces the same query params as
--- 'Web.FormUrlEncoded.urlEncodeAsFormStable' produces.
+-- 'Form.urlEncodeAsFormStable' produces.
 --
--- Note that 'Form' doesn't have concept of parameters of empty value
+-- Note that 'Form.Form' doesn't have concept of parameters of empty value
 -- (i.e. what you can get by @key := ""@). If the value is empty, it
 -- will be encoded as a valueless parameter
 -- (i.e. what you can get by @queryFlag key@).
 formToQuery :: (QueryParam param, Monoid param, ToForm f) => f -> param
-formToQuery f = mconcat $ map (uncurry queryParam . toParamPair) $ toListStable $ toForm f
+formToQuery f = mconcat $ map (uncurry queryParam . toParamPair) $ Form.toListStable $ toForm f
   where
     toParamPair (key, val) =
       if val == ""
