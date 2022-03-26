@@ -257,7 +257,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Typeable (Typeable, cast)
-import GHC.Exts (IsList(..))
 import GHC.Generics
 import GHC.TypeLits
 import qualified Language.Haskell.TH as TH
@@ -1301,8 +1300,6 @@ instance HttpBody ReqBodyUrlEnc where
 
 -- | An opaque monoidal value that allows to collect URL-encoded parameters
 -- to be wrapped in 'ReqBodyUrlEnc'.
---
--- You can inspect its content with 'toList'.
 newtype FormUrlEncodedParam = FormUrlEncodedParam [(Text, Maybe Text)]
   deriving (Semigroup, Monoid)
 
@@ -1313,11 +1310,6 @@ instance QueryParam FormUrlEncodedParam where
 -- | Use 'formToQuery'.
 instance FromForm FormUrlEncodedParam where
   fromForm = Right . formToQuery
-
-instance IsList FormUrlEncodedParam where
-  type Item FormUrlEncodedParam = (Text, Maybe Text)
-  fromList = FormUrlEncodedParam
-  toList (FormUrlEncodedParam l) = l
 
 -- | Multipart form data. Please consult the
 -- "Network.HTTP.Client.MultipartFormData" module for how to construct

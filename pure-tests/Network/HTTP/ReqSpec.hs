@@ -33,7 +33,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Time
 import Data.Typeable (Typeable, eqT)
-import GHC.Exts (IsList(..))
+import GHC.Exts(IsList (..))
 import GHC.Generics
 import qualified Language.Haskell.TH as TH
 import qualified Language.Haskell.TH.Quote as TH
@@ -236,12 +236,6 @@ spec = do
             _ -> expectationFailure "Wrong request body constructor."
 
   describe "query params" $ do
-    describe "FormUrlEncodedParam" $ do
-      describe "ToList and FromList" $ do
-        it "should be isomorphic" $
-          property $ \params -> do
-            let f = fromList params :: FormUrlEncodedParam
-            toList f `shouldBe` params
     describe "formToQuery" $ do
       it "should produce the same parameters as F.urlEncodeFormStable" $
         property $ \form -> do
