@@ -273,7 +273,7 @@ import Text.URI (URI)
 import qualified Text.URI as URI
 import qualified Text.URI.QQ as QQ
 import qualified Web.Authenticate.OAuth as OAuth
-import Web.FormUrlEncoded (ToForm(..), FromForm(..))
+import Web.FormUrlEncoded (FromForm (..), ToForm (..))
 import qualified Web.FormUrlEncoded as Form
 import Web.HttpApiData (ToHttpApiData (..))
 
@@ -1506,8 +1506,8 @@ formToQuery f = mconcat $ map (uncurry queryParam . toParamPair) $ Form.toListSt
   where
     toParamPair (key, val) =
       if val == ""
-      then (key, Nothing)
-      else (key, Just val)
+        then (key, Nothing)
+        else (key, Just val)
 
 -- | A type class for query-parameter-like things. The reason to have an
 -- overloaded 'queryParam' is to be able to use it as an 'Option' and as a

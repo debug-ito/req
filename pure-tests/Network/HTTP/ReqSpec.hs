@@ -33,7 +33,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Time
 import Data.Typeable (Typeable, eqT)
-import GHC.Exts(IsList (..))
+import GHC.Exts (IsList (..))
 import GHC.Generics
 import qualified Language.Haskell.TH as TH
 import qualified Language.Haskell.TH.Quote as TH
