@@ -243,6 +243,8 @@ spec = do
           case L.requestBody request of
             L.RequestBodyLBS x -> x `shouldBe` F.urlEncodeFormStable form
             _ -> expectationFailure "Wrong request body constructor"
+    specParamToList "FormUrlEncodedParam" (Proxy :: Proxy FormUrlEncodedParam)
+    specParamToList "Option" (Proxy :: Proxy (Option 'Http))
 
   describe "optional parameters" $ do
     describe "header" $ do
@@ -612,3 +614,14 @@ basicProxyAuthHeader :: ByteString -> ByteString -> ByteString
 basicProxyAuthHeader username password =
   fromJust . lookup Y.hProxyAuthorization . L.requestHeaders $
     L.applyBasicProxyAuth username password L.defaultRequest
+
+-- | Spec about 'paramToList' for the type @p@.
+specParamToList :: (QueryParam p, Monoid p) => String -> Proxy p -> Spec
+specParamToList typeName typeProxy = do
+  describe typeName $ do
+    describe "paramToList" $ do
+      it "should reproduce the parameters given by queryParam" $
+        property $ \(QueryParams params) -> do
+          let qp = (mconcat $ map (uncurry queryParam) params) `asProxyTypeOf` typeProxy
+              got = paramToList qp
+          got `shouldBe` params
