@@ -236,15 +236,17 @@ spec = do
             _ -> expectationFailure "Wrong request body constructor."
 
   describe "query params" $ do
-    describe "formToQuery" $ do
-      it "should produce the same parameters as F.urlEncodeFormStable" $
-        property $ \form -> do
-          request <- req_ POST url (ReqBodyUrlEnc $ formToQuery form) mempty
-          case L.requestBody request of
-            L.RequestBodyLBS x -> x `shouldBe` F.urlEncodeFormStable form
-            _ -> expectationFailure "Wrong request body constructor"
-    specParamToList "FormUrlEncodedParam" (Proxy :: Proxy FormUrlEncodedParam)
-    specParamToList "Option" (Proxy :: Proxy (Option 'Http))
+    describe "FormUrlEncodedParam" $ do
+      describe "formToQuery" $ do
+        it "should produce the same parameters as F.urlEncodeFormStable" $
+          property $ \form -> do
+            request <- req_ POST url (ReqBodyUrlEnc $ formToQuery form) mempty
+            case L.requestBody request of
+              L.RequestBodyLBS x -> x `shouldBe` F.urlEncodeFormStable form
+              _ -> expectationFailure "Wrong request body constructor"
+      specParamToList (Proxy :: Proxy FormUrlEncodedParam)
+    describe "Option" $ do
+      specParamToList (Proxy :: Proxy (Option 'Http))
 
   describe "optional parameters" $ do
     describe "header" $ do
@@ -616,12 +618,11 @@ basicProxyAuthHeader username password =
     L.applyBasicProxyAuth username password L.defaultRequest
 
 -- | Spec about 'paramToList' for the type @p@.
-specParamToList :: (QueryParam p, Monoid p) => String -> Proxy p -> Spec
-specParamToList typeName typeProxy = do
-  describe typeName $ do
-    describe "paramToList" $ do
-      it "should reproduce the parameters given by queryParam" $
-        property $ \(QueryParams params) -> do
-          let qp = (mconcat $ map (uncurry queryParam) params) `asProxyTypeOf` typeProxy
-              got = paramToList qp
-          got `shouldBe` params
+specParamToList :: (QueryParam p, Monoid p) => Proxy p -> Spec
+specParamToList typeProxy = do
+  describe "paramToList" $ do
+    it "should reproduce the parameters given by queryParam" $
+      property $ \(QueryParams params) -> do
+        let qp = (mconcat $ map (uncurry queryParam) params) `asProxyTypeOf` typeProxy
+            got = paramToList qp
+        got `shouldBe` params
