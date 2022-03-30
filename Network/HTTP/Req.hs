@@ -1520,6 +1520,7 @@ class QueryParam param where
   -- way). It's recommended to use @('=:')@ and 'queryFlag' instead of this
   -- method, because they are easier to read.
   queryParam :: ToHttpApiData a => Text -> Maybe a -> param
+
   -- | Get the query parameter names and values set by 'queryParam'.
   paramToList :: param -> [(Text, Maybe Text)]
 
