@@ -1306,6 +1306,7 @@ newtype FormUrlEncodedParam = FormUrlEncodedParam [(Text, Maybe Text)]
 instance QueryParam FormUrlEncodedParam where
   queryParam name mvalue =
     FormUrlEncodedParam [(name, toQueryParam <$> mvalue)]
+  paramToList (FormUrlEncodedParam p) = p
 
 -- | Use 'formToQuery'.
 instance FromForm FormUrlEncodedParam where
@@ -1525,6 +1526,7 @@ class QueryParam param where
 instance QueryParam (Option scheme) where
   queryParam name mvalue =
     withQueryParams ((:) (name, toQueryParam <$> mvalue))
+  paramToList (Option f _) = fst $ appEndo f ([], L.defaultRequest)
 
 ----------------------------------------------------------------------------
 -- Request—Optional parameters—Headers
