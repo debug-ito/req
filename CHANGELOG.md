@@ -1,3 +1,10 @@
+## Req 4.0.0
+
+* Add `paramToList` method to `QueryParam` type class.
+* Add `formToQuery` function. [Issue 126](https://github.com/mrkkrp/req/issues/126).
+* Add `FromForm` instance (in `Web.FormUrlEncoded` module)
+  to `Option` and `FormUrlEncodedParam` types.
+
 ## Req 3.10.0
 
 * Add `MonadHttp` instances for `transformers` types.
