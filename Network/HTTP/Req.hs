@@ -2015,7 +2015,7 @@ instance Exception HttpException
 --
 -- @since 3.12.0
 data StatusCodeException
-  = StatusCodeException (L.Response ()) ByteString
+  = StatusCodeException IgnoreResponse ByteString
   deriving (Show, Typeable, Generic)
 
 instance Exception StatusCodeException
@@ -2024,7 +2024,7 @@ instance Exception StatusCodeException
 --
 -- @since 3.12.0
 getStatusCodeException :: HttpException -> Maybe StatusCodeException
-getStatusCodeException (VanillaHttpException (L.HttpExceptionRequest _ (L.StatusCodeException r b))) = Just $ StatusCodeException r b
+getStatusCodeException (VanillaHttpException (L.HttpExceptionRequest _ (L.StatusCodeException r b))) = Just $ StatusCodeException (IgnoreResponse r) b
 getStatusCodeException _ = Nothing
 
 -- | A simple type isomorphic to 'Bool' that we only have for better error
