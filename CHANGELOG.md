@@ -1,3 +1,8 @@
+
+## Req 3.12.0
+
+* Add `StatusCodeException` type and `getStatusCodeException` function.
+
 ## Req 3.11.0
 
 * Add the `queryParamToList` method to the `QueryParam` type class.

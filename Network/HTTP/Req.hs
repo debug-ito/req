@@ -207,6 +207,8 @@ module Network.HTTP.Req
 
     -- * Other
     HttpException (..),
+    StatusCodeException (..),
+    getStatusCodeException,
     CanHaveBody (..),
     Scheme (..),
   )
@@ -2008,6 +2010,22 @@ data HttpException
   deriving (Show, Typeable, Generic)
 
 instance Exception HttpException
+
+-- | Subset of 'HttpException' that corresponds to 'L.StatusCodeException'.
+--
+-- @since 3.12.0
+data StatusCodeException
+  = StatusCodeException IgnoreResponse ByteString
+  deriving (Show, Typeable, Generic)
+
+instance Exception StatusCodeException
+
+-- | If the 'HttpException' is in fact a 'StatusCodeException', extract it.
+--
+-- @since 3.12.0
+getStatusCodeException :: HttpException -> Maybe StatusCodeException
+getStatusCodeException (VanillaHttpException (L.HttpExceptionRequest _ (L.StatusCodeException r b))) = Just $ StatusCodeException (IgnoreResponse r) b
+getStatusCodeException _ = Nothing
 
 -- | A simple type isomorphic to 'Bool' that we only have for better error
 -- messages. We use it as a kind and its data constructors as type-level
