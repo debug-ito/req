@@ -51,8 +51,8 @@ spec = do
 
   describe "getStatusCodeException" $
     it "converts non-2xx response to StatusCodeException" $
-       req GET (httpbin /: "foo") NoReqBody ignoreResponse mempty
-         `shouldThrow` selector404ByStatusCodeException
+      req GET (httpbin /: "foo") NoReqBody ignoreResponse mempty
+        `shouldThrow` selector404ByStatusCodeException
 
   describe "receiving user-agent header back" $
     it "works" $ do
