@@ -49,6 +49,11 @@ spec = do
         blindlyThrowing (req GET httpbin NoReqBody ignoreResponse mempty)
           `shouldThrow` anyException
 
+  describe "getStatusCodeException" $
+    it "converts non-2xx response to StatusCodeException" $
+       req GET (httpbin /: "foo") NoReqBody ignoreResponse mempty
+         `shouldThrow` selector404ByStatusCodeException
+
   describe "receiving user-agent header back" $
     it "works" $ do
       r <-
@@ -453,6 +458,13 @@ selector404
     ) =
     L.responseStatus response == Y.status404 && not (B.null chunk)
 selector404 _ = False
+
+-- | Same as 'selector404' except that it uses 'getStatusCodeException'.
+selector404ByStatusCodeException :: HttpException -> Bool
+selector404ByStatusCodeException e =
+  case getStatusCodeException e of
+    Nothing -> False
+    Just (StatusCodeException res chunk) -> responseStatusCode res == 404 && not (B.null chunk)
 
 -- | The empty JSON 'Object'.
 emptyObject :: Value
