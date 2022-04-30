@@ -207,8 +207,7 @@ module Network.HTTP.Req
 
     -- * Other
     HttpException (..),
-    StatusCodeException (..),
-    getStatusCodeException,
+    isStatusCodeException,
     CanHaveBody (..),
     Scheme (..),
   )
@@ -1973,6 +1972,14 @@ class HttpResponse response where
   acceptHeader :: Proxy response -> Maybe ByteString
   acceptHeader Proxy = Nothing
 
+-- | It ignores the response body.
+--
+-- @since 3.12.0
+instance HttpResponse (L.Response ()) where
+  type HttpResponseBody (L.Response ()) = ()
+  toVanillaResponse = id
+  getHttpResponse _ = return ()
+
 ----------------------------------------------------------------------------
 -- Other
 
@@ -2011,21 +2018,13 @@ data HttpException
 
 instance Exception HttpException
 
--- | Subset of 'HttpException' that corresponds to 'L.StatusCodeException'.
+-- | If the 'HttpException' is made of a 'L.StatusCodeException', return the 'L.Response' that
+-- caused the exception. Otherwise, it returns 'Nothing'.
 --
 -- @since 3.12.0
-data StatusCodeException
-  = StatusCodeException IgnoreResponse ByteString
-  deriving (Show, Typeable, Generic)
-
-instance Exception StatusCodeException
-
--- | If the 'HttpException' is in fact a 'StatusCodeException', extract it.
---
--- @since 3.12.0
-getStatusCodeException :: HttpException -> Maybe StatusCodeException
-getStatusCodeException (VanillaHttpException (L.HttpExceptionRequest _ (L.StatusCodeException r b))) = Just $ StatusCodeException (IgnoreResponse r) b
-getStatusCodeException _ = Nothing
+isStatusCodeException :: HttpException -> Maybe (L.Response ())
+isStatusCodeException (VanillaHttpException (L.HttpExceptionRequest _ (L.StatusCodeException r _))) = Just $ r
+isStatusCodeException _ = Nothing
 
 -- | A simple type isomorphic to 'Bool' that we only have for better error
 -- messages. We use it as a kind and its data constructors as type-level

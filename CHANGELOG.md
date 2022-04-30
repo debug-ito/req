@@ -1,7 +1,8 @@
 
 ## Req 3.12.0
 
-* Add `StatusCodeException` type and `getStatusCodeException` function.
+* Add `isStatusCodeException` function.
+* Add `instance HttpResponse (Network.HTTP.Client.Response ())`.
 
 ## Req 3.11.0
 
