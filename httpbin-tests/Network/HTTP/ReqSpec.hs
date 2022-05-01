@@ -49,8 +49,8 @@ spec = do
         blindlyThrowing (req GET httpbin NoReqBody ignoreResponse mempty)
           `shouldThrow` anyException
 
-  describe "getStatusCodeException" $
-    it "converts non-2xx response to StatusCodeException" $
+  describe "isStatusCodeException" $
+    it "extracts non-2xx response" $
       req GET (httpbin /: "foo") NoReqBody ignoreResponse mempty
         `shouldThrow` selector404ByStatusCodeException
 
@@ -459,12 +459,12 @@ selector404
     L.responseStatus response == Y.status404 && not (B.null chunk)
 selector404 _ = False
 
--- | Same as 'selector404' except that it uses 'getStatusCodeException'.
+-- | Same as 'selector404' except that it uses 'isStatusCodeException'.
 selector404ByStatusCodeException :: HttpException -> Bool
 selector404ByStatusCodeException e =
-  case getStatusCodeException e of
+  case isStatusCodeException e of
     Nothing -> False
-    Just (StatusCodeException res chunk) -> responseStatusCode res == 404 && not (B.null chunk)
+    Just r -> responseStatusCode r == 404
 
 -- | The empty JSON 'Object'.
 emptyObject :: Value

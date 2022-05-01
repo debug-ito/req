@@ -1978,7 +1978,7 @@ class HttpResponse response where
 instance HttpResponse (L.Response ()) where
   type HttpResponseBody (L.Response ()) = ()
   toVanillaResponse = id
-  getHttpResponse _ = return ()
+  getHttpResponse r = return $ void r
 
 ----------------------------------------------------------------------------
 -- Other
